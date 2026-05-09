@@ -140,6 +140,10 @@ summary::-webkit-details-marker { display: none; }
 <script>
 // --- Инициализация данных ---
 let forms = typeof initialForms !== 'undefined' ? initialForms : [];
+
+// Сортировка по алфавиту (добавляем этот блок)
+forms.sort((a, b) => a.name.localeCompare(b.name));
+
 const MAX_SHAPE_SLOTS = 3;
 let shapeSlots = JSON.parse(localStorage.getItem('wild_shape_slots')) || Array(MAX_SHAPE_SLOTS).fill(true);
 
