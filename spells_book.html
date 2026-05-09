@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="spells.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заклинания</title>
+
+<style>
+  :root {
+    --bg: #0f061a;
+    --card: #1a0f2b;
+    --card-open: #25163d;
+    --accent: #a855f7;
+    --accent-light: #d8b4fe;
+    --text: #e9d5ff;
+    --gold: #c084fc;
+    --border-radius: 8px;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Georgia', serif;
+    background: radial-gradient(circle at 20% 20%, #1a0f2b, #0f061a 80%);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    padding: 25px;
+    background: rgba(20, 10, 36, 0.8);
+    border-bottom: 2px solid var(--accent);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  }
+
+  h1 { 
+    margin: 0; font-size: 1.6rem; letter-spacing: 4px; 
+    color: var(--accent-light); text-transform: uppercase; 
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+  }
+
+  main { max-width: 800px; margin: auto; padding: 15px; }
+
+  h2 {
+    margin-top: 30px; font-size: 1.1rem; color: var(--accent-light);
+    text-transform: uppercase; background: rgba(168, 85, 247, 0.1);
+    padding: 8px 15px; border-left: 4px solid var(--accent);
+  }
+
+  /* --- ЯЧЕЙКИ --- */
+  .slots-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin: 20px 0; }
+  .slot-item {
+    background: var(--card); padding: 10px; border-radius: var(--border-radius);
+    border: 1px solid rgba(168, 85, 247, 0.3); text-align: center;
+  }
+  .slot-name { font-weight: bold; color: var(--accent-light); font-size: 0.75rem; margin-bottom: 8px; display: block; opacity: 0.8; }
+  .slot-controls { display: flex; align-items: center; justify-content: space-between; }
+  .slot-count { font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold; color: var(--gold); }
+  .btn-s { background: #1f1235; border: 1px solid var(--accent); color: var(--accent-light); border-radius: 4px; width: 28px; height: 28px; cursor: pointer; }
+
+  /* --- Метка Луны --- */
+  .moon-mark {
+    color: #38bdf8; /* Голубоватый лунный свет */
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+    margin-right: 8px;
+    font-size: 1.1rem;
+  }
+
+  /* --- ПОИСК --- */
+  #search {
+    width: 100%; padding: 12px; border-radius: var(--border-radius);
+    border: 1px solid #5b21b6; background: rgba(20, 10, 36, 0.6); color: white;
+    box-sizing: border-box; margin-bottom: 15px; font-family: inherit; outline: none;
+  }
+
+  /* --- КАРТОЧКИ --- */
+  details { background: var(--card); border-radius: var(--border-radius); margin-bottom: 10px; border: 1px solid rgba(168, 85, 247, 0.2); overflow: hidden; }
+  details[open] { border-color: var(--accent-light); background: var(--card-open); }
+  summary { padding: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none; }
+
+  .cast-btn {
+    background: rgba(168, 85, 247, 0.15); border: 1px solid var(--accent); color: var(--accent-light);
+    padding: 6px 14px; border-radius: 4px; font-size: 11px; cursor: pointer; text-transform: uppercase; font-weight: bold;
+  }
+  .cast-btn:active { background: var(--accent); color: white; }
+
+  .move-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(168,85,247,0.3); padding: 4px 12px; border-radius: 4px; color: var(--accent-light); margin-left: 5px; }
+
+  .block { padding: 15px; font-size: 0.95rem; border-top: 1px solid rgba(168, 85, 247, 0.2); background: rgba(0,0,0,0.15); }
+  .spell-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+  .label { color: var(--accent-light); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; opacity: 0.8; }
+
+  .rest-btn {
+    background: linear-gradient(45deg, #140a24, #1a0f2b); color: var(--accent-light); border: 1px solid var(--accent);
+    padding: 14px; border-radius: var(--border-radius); cursor: pointer; width: 100%;
+    font-weight: bold; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;
+  }
+
+  .level-header {
+    font-size: 0.85rem; color: var(--accent-light); border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+    margin: 20px 0 10px 5px; padding-bottom: 5px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center;
+  }
+  .level-header::after { content: ""; flex-grow: 1; height: 1px; background: linear-gradient(to right, rgba(168, 85, 247, 0.4), transparent); margin-left: 15px; }
+
+  /* --- МОДАЛЬНОЕ ОКНО --- */
+  #modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
+    display: none; justify-content: center; align-items: center; z-index: 3000;
+  }
+  .modal-card {
+    background: var(--card); border: 2px solid var(--accent);
+    padding: 30px; border-radius: 12px; max-width: 320px; text-align: center;
+    box-shadow: 0 0 50px rgba(0,0,0,0.9); animation: slideIn 0.2s ease-out;
+  }
+  .modal-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 25px; }
+  .modal-btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; }
+  .btn-confirm { background: var(--accent); color: white; border: none; }
+  .btn-cancel { background: transparent; color: var(--accent-light); border: 1px solid var(--accent); }
+
+  #notification-container { position: fixed; top: 20px; right: 20px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; }
+  .toast { background: var(--card-open); color: var(--text); border-left: 4px solid var(--accent); padding: 12px 20px; border-radius: 4px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); animation: slideIn 0.3s forwards; }
+
+  @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div id="notification-container"></div>
+
+<div id="modal-overlay">
+  <div class="modal-card">
+    <div style="color: var(--accent-light); font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">✨ Длительный отдых</div>
+    <div style="font-size: 0.95rem; opacity: 0.8;">Восстановить все ячейки заклинаний?</div>
+    <div class="modal-buttons">
+      <button class="modal-btn btn-confirm" onclick="executeLongRest()">Да</button>
+      <button class="modal-btn btn-cancel" onclick="closeModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <h1>📜 Книга Заклинаний</h1>
+</header>
+
+<main>
+  <section>
+    <div id="slots-grid" class="slots-container"></div>
+    <button class="rest-btn" onclick="openModal()">⏳ Длительный отдых</button>
+  </section>
+
+  <input id="search" placeholder="Поиск плетения...">
+
+  <h2>Подготовленные</h2>
+  <div id="prepared-list"></div>
+
+  <h2>Общий список</h2>
+  <div id="available-list"></div>
+</main>
+
+<script>
+let spellSlots = { 1: { current: 4, max: 4 }, 2: { current: 3, max: 3 }, 3: { current: 3, max: 3 } };
+let spells = initialSpells;
+
+function showNotice(message) {
+  const container = document.getElementById("notification-container");
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerText = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function openModal() { document.getElementById("modal-overlay").style.display = "flex"; }
+function closeModal() { document.getElementById("modal-overlay").style.display = "none"; }
+function executeLongRest() { longRest(); closeModal(); showNotice("Силы восстановлены!"); }
+
+function castSpell(index) {
+  const spell = spells[index];
+  const lvl = spell.levelNum;
+  if (spellSlots[lvl] && spellSlots[lvl].current > 0) {
+    spellSlots[lvl].current--;
+    showNotice(`Сотворено: ${spell.name}`);
+    saveAndRender();
+  } else { showNotice(`Нет ячеек ${lvl} круга!`); }
+}
+
+function longRest() {
+  for (let lvl in spellSlots) { spellSlots[lvl].current = spellSlots[lvl].max; }
+  saveAndRender();
+}
+
+function renderSlots() {
+  const container = document.getElementById("slots-grid");
+  container.innerHTML = "";
+  Object.keys(spellSlots).forEach(lvl => {
+    const slot = spellSlots[lvl];
+    const div = document.createElement("div");
+    div.className = "slot-item";
+    div.innerHTML = `<span class="slot-name">${lvl} круг</span>
+      <div class="slot-controls">
+        <button class="btn-s" onclick="updateSlot(${lvl}, -1)">-</button>
+        <span class="slot-count">${slot.current}/${slot.max}</span>
+        <button class="btn-s" onclick="updateSlot(${lvl}, 1)">+</button>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function createSpellElement(spell, index) {
+  const d = document.createElement("details");
+  const s = document.createElement("summary");
+  
+  // Метка Луны (отображается если isMoon: true в spells.js)
+  const moonIcon = spell.isMoon ? `<span class="moon-mark" title="Круг Луны">🌙</span>` : "";
+
+  s.innerHTML = `
+    <div style="display: flex; align-items: center;">
+      ${moonIcon}
+      <strong>${spell.name}</strong>
+    </div>
+    <div>
+      ${spell.levelNum > 0 && spell.prepared ? `<button class="cast-btn" onclick="event.stopPropagation(); castSpell(${index})">Сотворить</button>` : ""}
+      ${spell.locked ? "" : `<button class="move-btn" onclick="event.stopPropagation(); togglePrepared(${index})">${spell.prepared ? "−" : "+"}</button>`}
+    </div>`;
+
+  d.innerHTML = `<div class="block">
+      <div class="spell-meta">
+        <div><span class="label">Школа:</span> ${spell.school}</div>
+        <div><span class="label">Время:</span> ${spell.time}</div>
+        <div><span class="label">Дистанция:</span> ${spell.range}</div>
+        <div><span class="label">Компоненты:</span> ${spell.components}</div>
+      </div>
+      <p style="white-space: pre-line; opacity: 0.9;">${spell.description}</p>
+      ${spell.roleplay ? `<p style="color: var(--gold); font-style: italic; font-size: 0.85rem; border-top: 1px dotted rgba(168,85,247,0.2); padding-top: 10px;">${spell.roleplay}</p>` : ""}
+    </div>`;
+  d.prepend(s);
+  return d;
+}
+
+function updateSlot(lvl, delta) {
+  spellSlots[lvl].current = Math.min(Math.max(0, spellSlots[lvl].current + delta), spellSlots[lvl].max);
+  saveAndRender();
+}
+
+function togglePrepared(i) {
+  if (spells[i].locked) return;
+  spells[i].prepared = !spells[i].prepared;
+  saveAndRender();
+}
+
+function renderSection(containerId, list) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  list.sort((a,b) => a.spell.levelNum - b.spell.levelNum || a.spell.name.localeCompare(b.spell.name));
+  let lastLevel = -1;
+  list.forEach(item => {
+    if (item.spell.levelNum !== lastLevel) {
+      lastLevel = item.spell.levelNum;
+      const h3 = document.createElement("h3");
+      h3.className = "level-header";
+      h3.innerText = lastLevel === 0 ? "Заговоры" : `${lastLevel} Круг`;
+      container.appendChild(h3);
+    }
+    container.appendChild(createSpellElement(item.spell, item.index));
+  });
+}
+
+function saveAndRender() {
+  localStorage.setItem("spellbook_data", JSON.stringify({spells, spellSlots}));
+  const indexed = spells.map((s, i) => ({ spell: s, index: i }));
+  renderSection("prepared-list", indexed.filter(x => x.spell.prepared));
+  renderSection("available-list", indexed.filter(x => !x.spell.prepared));
+  renderSlots();
+}
+
+const saved = localStorage.getItem("spellbook_data");
+if(saved) {
+  const data = JSON.parse(saved);
+  data.spells.forEach(savedSpell => {
+    const original = spells.find(s => s.name === savedSpell.name);
+    if(original) { original.prepared = savedSpell.prepared; }
+  });
+  spellSlots = data.spellSlots;
+}
+
+document.getElementById("search").addEventListener("input", e => {
+  const v = e.target.value.toLowerCase();
+  document.querySelectorAll("details").forEach(d => { d.style.display = d.innerText.toLowerCase().includes(v) ? "" : "none"; });
+});
+
+saveAndRender();
+</script>
+</body>
+</html>

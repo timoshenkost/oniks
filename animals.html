@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="animals.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Призывные животные</title>
+
+<style>
+:root {
+  --bg: #0f061a;
+  --card: #1a0f2b;
+  --card-open: #24153a;
+  --accent: #a855f7;
+  --accent-light: #d8b4fe;
+  --text: #e9d5ff;
+  --gold: #c084fc;
+}
+
+body {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  background: radial-gradient(circle at 20% 20%, #1a0f2b, #0f061a 80%);
+  color: var(--text);
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: #140a24;
+  border-bottom: 2px solid var(--accent);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+h1 {
+  margin: 0;
+  color: var(--accent-light);
+  letter-spacing: 2px;
+}
+
+main {
+  max-width: 800px;
+  margin: auto;
+  padding: 15px;
+}
+
+/* Карточка */
+.creature {
+  border: 1px solid #5b21b6;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+  transition: 0.2s;
+}
+
+.creature[open] {
+  background: var(--card-open);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.creature summary {
+  padding: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  background: #1f1235;
+}
+
+.creature summary:hover {
+  background: #2a1a45;
+}
+
+.creature[open] summary {
+  border-bottom: 1px solid #5b21b6;
+}
+
+.size {
+  opacity: 0.7;
+}
+
+/* Контент */
+.content {
+  padding: 15px;
+}
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.top-grid b {
+  color: var(--accent-light);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  text-align: center;
+  margin: 12px 0;
+}
+
+.stat-name {
+  font-size: 0.7rem;
+  color: var(--accent-light);
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.stat-mod {
+  font-size: 0.8rem;
+  color: var(--gold);
+}
+
+.info {
+  font-size: 0.85rem;
+}
+
+.section-title {
+  margin-top: 12px;
+  color: var(--accent-light);
+  font-weight: bold;
+}
+
+.action {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  padding: 6px;
+  border-left: 2px solid var(--accent);
+  background: rgba(168, 85, 247, 0.05);
+}
+
+/* стрелка */
+summary::after {
+  content: "▸";
+  float: right;
+  color: var(--accent);
+}
+
+details[open] summary::after {
+  content: "▾";
+}
+
+/* лёгкое магическое свечение текста */
+h1, .section-title {
+  text-shadow: 0 0 6px rgba(168, 85, 247, 0.6);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🐾 Призывные животные</h1>
+</header>
+
+<main id="app"></main>
+
+<script>
+function renderStat(name, stat) {
+  return `
+    <div>
+      <div class="stat-name">${name}</div>
+      <div class="stat-value">${stat.value}</div>
+      <div class="stat-mod">${stat.mod}</div>
+      <div class="stat-save" style="font-size: 0.7rem; color: var(--accent-light); min-height: 14px; margin-top: 2px;">
+        ${stat.save ? `спас ${stat.save}` : '&nbsp;'}
+      </div>
+    </div>
+  `;
+}
+
+function renderStatBlock(creature) {
+  return `
+    <details class="creature">
+      <summary>
+        ${creature.name} <span class="size">(${creature.size})</span>
+      </summary>
+
+      <div class="content">
+
+        <div class="top-grid">
+          <div><b>КЗ</b> ${creature.ac}</div>
+          <div><b>Инициатива</b> ${creature.initiative}</div>
+          <div><b>Хиты</b> ${creature.hp}</div>
+          <div><b>Скорость</b> ${creature.speed}</div>
+        </div>
+
+        <div class="stats">
+          ${renderStat("СИЛ", creature.stats.str)}
+          ${renderStat("ЛОВ", creature.stats.dex)}
+          ${renderStat("ТЕЛ", creature.stats.con)}
+          ${renderStat("ИНТ", creature.stats.int)}
+          ${renderStat("МДР", creature.stats.wis)}
+          ${renderStat("ХАР", creature.stats.cha)}
+        </div>
+
+        <div class="info">
+          <div><b>Чувства:</b> ${creature.senses}</div>
+          <div><b>Языки:</b> ${creature.languages}</div>
+          <div><b>Опасность:</b> ${creature.cr}</div>
+        </div>
+
+        ${creature.traits ? `
+          <div class="section-title">Особенности</div>
+          ${creature.traits.map(t => `
+            <div class="action">
+              <b>${t.name}.</b> ${t.desc}
+            </div>
+          `).join("")}
+        ` : ""}
+
+        <div class="section-title">Действия</div>
+        ${creature.actions.map(a => `
+          <div class="action">
+            <b>${a.name}.</b> ${a.desc}
+          </div>
+        `).join("")}
+
+        ${creature.bonusActions ? `
+          <div class="section-title">Бонусные действия</div>
+          ${creature.bonusActions.map(ba => `
+            <div class="action">
+              <b>${ba.name}.</b> ${ba.desc}
+            </div>
+          `).join("")}
+        ` : ""}
+
+      </div>
+    </details>
+  `;
+}
+
+document.getElementById("app").innerHTML =
+  initialAnimals.map(renderStatBlock).join("");
+</script>
+
+</body>
+</html>

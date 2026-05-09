@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="forms.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Облики друида</title>
+
+<style>
+:root {
+  --bg: #0f061a;
+  --card: #1a0f2b;
+  --card-open: #24153a;
+  --accent: #a855f7;
+  --accent-light: #d8b4fe;
+  --text: #e9d5ff;
+  --gold: #c084fc;
+}
+
+body {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  background: radial-gradient(circle at 20% 20%, #1a0f2b, #0f061a 80%);
+  color: var(--text);
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: #140a24;
+  border-bottom: 2px solid var(--accent);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+/* Возвращенный оригинальный стиль хэдера */
+h1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px; 
+}
+
+h1 span {
+  color: var(--accent);
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+/* Возвращенный оригинальный виджет */
+.wild-shape-tracker {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.tracker-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-light);
+  margin-bottom: 8px;
+}
+
+.slots-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.slot {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: 0.3s;
+}
+
+.slot.active {
+  background: var(--accent);
+  box-shadow: 0 0 15px var(--accent), inset 0 0 5px white;
+}
+
+.slot.spent {
+  background: transparent;
+  border-color: #4b218b;
+}
+
+.slot.spent::after {
+  content: "✕";
+  color: #4b218b;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+button {
+  background: #1f1235;
+  color: var(--text);
+  border: 1px solid var(--accent);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-restore-all { border-color: var(--gold); color: var(--gold); }
+
+/* Модальное окно */
+#modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: var(--card);
+  border: 2px solid var(--accent);
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 30px var(--accent);
+  max-width: 300px;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Остальные стили для карточек */
+main { max-width: 800px; margin: auto; padding: 15px; }
+
+.creature { 
+  border: 1px solid #5b21b6; 
+  border-radius: 10px; 
+  margin-bottom: 14px; 
+  background: var(--card); 
+  overflow: hidden; 
+}
+
+.creature summary { 
+  padding: 12px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  background: #1f1235; 
+}
+
+.content { padding: 15px; }
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.top-grid b { color: var(--accent-light); }
+
+.stats { 
+  display: grid; 
+  grid-template-columns: repeat(6, 1fr); 
+  text-align: center; 
+  margin: 12px 0; 
+}
+
+.stat-name { font-size: 0.7rem; color: var(--accent-light); }
+.stat-value { font-size: 1.1rem; font-weight: bold; }
+.stat-mod { font-size: 0.8rem; color: var(--gold); }
+
+/* Поле для спасбросков */
+.stat-save { 
+  font-size: 0.7rem; 
+  color: var(--accent-light); 
+  min-height: 14px; 
+  margin-top: 2px; 
+}
+
+.section-title { margin-top: 12px; color: var(--accent-light); font-weight: bold; }
+
+.action { 
+  margin-top: 6px; 
+  font-size: 0.9rem; 
+  padding: 6px; 
+  border-left: 2px solid var(--accent); 
+  background: rgba(168, 85, 247, 0.05); 
+}
+
+summary::after { content: "▸"; float: right; color: var(--accent); }
+details[open] summary::after { content: "▾"; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1><span class="druid-icon">🐻</span>Дикие облики</h1>
+
+  <div class="wild-shape-tracker">
+    <div class="tracker-title">Дикий облик</div>
+    <div class="slots-row" id="slots-container"></div>
+    <div class="controls">
+      <button onclick="restoreOne()">+1 Заряд</button>
+      <button class="btn-restore-all" onclick="showResetModal()">Длительный отдых</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<div id="modal-overlay">
+  <div class="modal-content">
+    <h3 style="margin-top:0; color:var(--accent-light)">Длительный отдых?</h3>
+    <p>Восстановить все заряды Дикого облика?</p>
+    <div class="modal-btns">
+      <button onclick="confirmReset(true)" style="border-color:var(--gold); color:var(--gold)">Да</button>
+      <button onclick="confirmReset(false)">Нет</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Логика Дикого облика ---
+const MAX_FORMS = 3;
+let slots = JSON.parse(localStorage.getItem('wild_shape_slots')) || Array(MAX_FORMS).fill(true);
+
+function saveState() {
+  localStorage.setItem('wild_shape_slots', JSON.stringify(slots));
+}
+
+function renderTracker() {
+  const container = document.getElementById('slots-container');
+  container.innerHTML = '';
+  slots.forEach((isActive, index) => {
+    const slotDiv = document.createElement('div');
+    slotDiv.className = `slot ${isActive ? 'active' : 'spent'}`;
+    slotDiv.onclick = () => { slots[index] = !slots[index]; saveState(); renderTracker(); };
+    container.appendChild(slotDiv);
+  });
+}
+
+function restoreOne() {
+  const spentIndex = slots.indexOf(false);
+  if (spentIndex !== -1) { slots[spentIndex] = true; saveState(); renderTracker(); }
+}
+
+function showResetModal() {
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function confirmReset(isConfirmed) {
+  if (isConfirmed) {
+    slots = Array(MAX_FORMS).fill(true);
+    saveState();
+    renderTracker();
+  }
+  document.getElementById('modal-overlay').style.display = 'none';
+}
+
+// --- Отрисовка существ ---
+function renderStat(name, stat) {
+  return `
+    <div>
+      <div class="stat-name">${name}</div>
+      <div class="stat-value">${stat.value}</div>
+      <div class="stat-mod">${stat.mod}</div>
+      <div class="stat-save">
+        ${stat.save ? `спас ${stat.save}` : '&nbsp;'}
+      </div>
+    </div>
+  `;
+}
+
+function renderStatBlock(creature) {
+  return `
+    <details class="creature">
+      <summary>
+        ${creature.name} <span class="size">(${creature.size})</span>
+      </summary>
+
+      <div class="content">
+
+        <div class="top-grid">
+          <div><b>КЗ</b> ${creature.ac}</div>
+          <div><b>Инициатива</b> ${creature.initiative}</div>
+          <div><b>Хиты</b> ${creature.hp}</div>
+          <div><b>Скорость</b> ${creature.speed}</div>
+        </div>
+
+        <div class="stats">
+          ${renderStat("СИЛ", creature.stats.str)}
+          ${renderStat("ЛОВ", creature.stats.dex)}
+          ${renderStat("ТЕЛ", creature.stats.con)}
+          ${renderStat("ИНТ", creature.stats.int)}
+          ${renderStat("МДР", creature.stats.wis)}
+          ${renderStat("ХАР", creature.stats.cha)}
+        </div>
+
+        <div class="info">
+          <div><b>Чувства:</b> ${creature.senses}</div>
+          <div><b>Языки:</b> ${creature.languages}</div>
+          <div><b>Опасность:</b> ${creature.cr}</div>
+        </div>
+
+        ${creature.traits ? `
+          <div class="section-title">Особенности</div>
+          ${creature.traits.map(t => `
+            <div class="action">
+              <b>${t.name}.</b> ${t.desc}
+            </div>
+          `).join("")}
+        ` : ""}
+
+        <div class="section-title">Действия</div>
+        ${creature.actions.map(a => `
+          <div class="action">
+            <b>${a.name}.</b> ${a.desc}
+          </div>
+        `).join("")}
+
+        ${creature.bonusActions ? `
+          <div class="section-title">Бонусные действия</div>
+          ${creature.bonusActions.map(ba => `
+            <div class="action">
+              <b>${ba.name}.</b> ${ba.desc}
+            </div>
+          `).join("")}
+        ` : ""}
+
+      </div>
+    </details>
+  `;
+}
+
+renderTracker();
+
+if (typeof initialForms !== 'undefined') {
+  document.getElementById("app").innerHTML = initialForms.map(renderStatBlock).join("");
+}
+</script>
+
+</body>
+</html>
