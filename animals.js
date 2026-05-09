@@ -1,6 +1,6 @@
 const initialAnimals = [
   {
-    name: "Носорог",
+    name: "Носг",
     size: "Большой",
     ac: "13",
     initiative: "-1",
