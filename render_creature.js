@@ -38,6 +38,9 @@ function renderStatBlock(creature) {
         <div class="info">
           <div><b>Размер:</b> ${creature.size}</div>
           <div><b>Чувства:</b> ${creature.senses}</div>
+          ${creature.skills ? `<div><b>Навыки:</b> ${creature.skills}</div>` : ''}
+          ${creature.resistances ? `<div><b>Сопротивления:</b> ${creature.resistances}</div>` : ''}
+          ${creature.immunities ? `<div><b>Иммунитеты:</b> ${creature.immunities}</div>` : ''}
           <div><b>Языки:</b> ${creature.languages}</div>
           <div><b>Опасность:</b> ${creature.cr}</div>
         </div>
