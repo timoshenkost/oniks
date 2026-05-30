@@ -192,7 +192,11 @@ function applyDruidBuffs(original) {
     // 2. КД (13 + мод. Мудрости)
     const druidAC = 13 + currentWisMod;
     if (parseInt(c.ac) < druidAC) {
-        c.ac = druidAC.toString();
+        let finalAC = druidAC;
+        if (c.is_armor === true) {
+            finalAC += 1;
+        }
+        c.ac = finalAC.toString();
     }
 
     // 3. Спасбросок Телосложения (текущий спас формы + мод. Мудрости друида)
