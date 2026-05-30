@@ -165,6 +165,7 @@ const initialForms = [
     initiative: "+3",
     hp: "26",
     speed: "30 футов, Лазания 30 футов",
+    is_armor: true,
     stats: {
       str: { value: 14, mod: "+2" },
       dex: { value: 16, mod: "+3" },
