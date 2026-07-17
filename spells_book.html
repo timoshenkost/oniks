@@ -181,12 +181,13 @@
 </main>
 
 <script>
-let spellSlots = {
+const defaultSpellSlots = {
   1: { current: 4, max: 4 },
   2: { current: 3, max: 3 },
   3: { current: 3, max: 3 },
   4: { current: 1, max: 1 }
 };
+let spellSlots = JSON.parse(JSON.stringify(defaultSpellSlots));
 let spells = initialSpells;
 
 function showNotice(message) {
@@ -213,7 +214,12 @@ function castSpell(index) {
 }
 
 function longRest() {
-  for (let lvl in spellSlots) { spellSlots[lvl].current = spellSlots[lvl].max; }
+  for (let lvl in spellSlots) {
+    if (defaultSpellSlots[lvl]) {
+      spellSlots[lvl].max = defaultSpellSlots[lvl].max; // Сюда подтягивается новый max из кода
+    }
+    spellSlots[lvl].current = spellSlots[lvl].max;
+  }
   saveAndRender();
 }
 
